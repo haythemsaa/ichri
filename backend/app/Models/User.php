@@ -145,6 +145,21 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(CartItem::class);
     }
 
+    public function karnyCustomers()
+    {
+        return $this->hasMany(KarnyCustomer::class);
+    }
+
+    public function karnyTransactions()
+    {
+        return $this->hasMany(KarnyTransaction::class);
+    }
+
+    public function digitalServiceTransactions()
+    {
+        return $this->hasMany(DigitalServiceTransaction::class);
+    }
+
     /**
      * Scopes
      */
