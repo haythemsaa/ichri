@@ -1,0 +1,274 @@
+{
+  "info": {
+    "name": "ichri.tn API - Complete Collection",
+    "description": "Complete API collection for ichri.tn B2B Platform including Phase 2 features",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "ichri-tn-api-v2",
+    "version": "2.5.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+21698123456\",\n  \"password\": \"Password123\",\n  \"first_name\": \"Ahmed\",\n  \"last_name\": \"Ben Salah\",\n  \"store_name\": \"Épicerie Essalem\",\n  \"store_type\": \"epicerie\",\n  \"address\": \"Rue République\",\n  \"city\": \"Sfax\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+21698123456\",\n  \"password\": \"Password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Loyalty Program (Phase 2)",
+      "item": [
+        {
+          "name": "Get Loyalty Points",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loyalty/points",
+              "host": ["{{base_url}}"],
+              "path": ["loyalty", "points"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Rewards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loyalty/rewards",
+              "host": ["{{base_url}}"],
+              "path": ["loyalty", "rewards"]
+            }
+          }
+        },
+        {
+          "name": "Redeem Reward",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loyalty/rewards/:id/redeem",
+              "host": ["{{base_url}}"],
+              "path": ["loyalty", "rewards", ":id", "redeem"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Redemptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loyalty/redemptions",
+              "host": ["{{base_url}}"],
+              "path": ["loyalty", "redemptions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Team Management (Phase 2)",
+      "item": [
+        {
+          "name": "Get Team Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/team/members",
+              "host": ["{{base_url}}"],
+              "path": ["team", "members"]
+            }
+          }
+        },
+        {
+          "name": "Invite Team Member",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employee@example.com\",\n  \"role\": \"employee\",\n  \"spending_limit\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/team/invite",
+              "host": ["{{base_url}}"],
+              "path": ["team", "invite"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Masquerade (Phase 2)",
+      "item": [
+        {
+          "name": "Start Masquerade Session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 123,\n  \"reason\": \"Help customer place order\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/masquerade/start",
+              "host": ["{{base_url}}"],
+              "path": ["masquerade", "start"]
+            }
+          }
+        },
+        {
+          "name": "End Masquerade Session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/masquerade/end",
+              "host": ["{{base_url}}"],
+              "path": ["masquerade", "end"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Loyalty Management (Phase 2)",
+      "item": [
+        {
+          "name": "Get All Rewards (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/loyalty/rewards",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "loyalty", "rewards"]
+            }
+          }
+        },
+        {
+          "name": "Create Reward (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"10 TND Discount\",\n  \"description\": \"Get 10 TND off your next order\",\n  \"type\": \"discount\",\n  \"points_cost\": 500,\n  \"config\": {\"amount\": 10},\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/loyalty/rewards",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "loyalty", "rewards"]
+            }
+          }
+        },
+        {
+          "name": "Get Loyalty Statistics (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/loyalty/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "loyalty", "statistics"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
