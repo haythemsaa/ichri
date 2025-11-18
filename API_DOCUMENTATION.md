@@ -781,6 +781,426 @@ Authorization: Bearer {token}
 
 ---
 
+## 👥 Team Management (Multi-User Accounts)
+
+### Get Team Members
+```http
+GET /team/members
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "members": [
+      {
+        "id": 1,
+        "account_id": 10,
+        "user_id": 15,
+        "role": "admin",
+        "permissions": ["can_order", "can_view_reports"],
+        "spending_limit": 1000.000,
+        "is_active": true,
+        "user": {...},
+        "invited_by": {...}
+      }
+    ]
+  }
+}
+```
+
+### Invite Team Member
+```http
+POST /team/invite
+Authorization: Bearer {token}
+```
+
+**Body:**
+```json
+{
+  "email": "employee@example.com",
+  "phone": "+21698765432",
+  "role": "employee",
+  "spending_limit": 500.000,
+  "permissions": ["can_order", "can_view_products"]
+}
+```
+
+**Roles:** `admin`, `manager`, `employee`, `viewer`
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Invitation envoyée avec succès",
+  "data": {
+    "invitation": {
+      "id": 1,
+      "account_id": 10,
+      "email": "employee@example.com",
+      "role": "employee",
+      "token": "abc123...",
+      "expires_at": "2024-12-01T10:00:00Z"
+    }
+  }
+}
+```
+
+### Update Team Member
+```http
+PUT /team/members/{id}
+Authorization: Bearer {token}
+```
+
+**Body:**
+```json
+{
+  "role": "manager",
+  "spending_limit": 1500.000,
+  "is_active": true,
+  "permissions": ["can_order", "can_view_reports", "can_manage_inventory"]
+}
+```
+
+### Remove Team Member
+```http
+DELETE /team/members/{id}
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Membre retiré de l'équipe"
+}
+```
+
+---
+
+## 🎭 Masquerade (Sales Rep Ordering)
+
+### Start Masquerade Session
+```http
+POST /masquerade/start
+Authorization: Bearer {token}
+```
+
+**Requires:** `admin` or `sales_rep` role
+
+**Body:**
+```json
+{
+  "user_id": 123,
+  "reason": "Help customer place first order"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Session masquerade démarrée",
+  "data": {
+    "session_id": 1,
+    "target_user": {...},
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJI...",
+    "token_type": "bearer",
+    "warning": "Vous agissez en tant que Épicerie Test"
+  }
+}
+```
+
+### End Masquerade Session
+```http
+POST /masquerade/end
+Authorization: Bearer {token}
+```
+
+**Body:**
+```json
+{
+  "session_id": 1
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Session masquerade terminée",
+  "data": {
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJI...",
+    "user": {...}
+  }
+}
+```
+
+### Get Masquerade History
+```http
+GET /masquerade/history
+Authorization: Bearer {token}
+```
+
+**Requires:** `admin` role
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "admin_user_id": 5,
+        "target_user_id": 123,
+        "reason": "Customer onboarding",
+        "started_at": "2024-11-15T10:00:00Z",
+        "ended_at": "2024-11-15T10:30:00Z",
+        "ip_address": "192.168.1.1",
+        "actions_log": [...],
+        "admin": {...},
+        "target": {...}
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 🎁 Loyalty Program
+
+### Get Loyalty Points
+```http
+GET /loyalty/points
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "points": 1500,
+    "lifetime_points": 6000,
+    "tier": "gold",
+    "tier_multiplier": 1.5,
+    "tier_expires_at": "2025-11-15T00:00:00Z",
+    "next_tier": "platinum",
+    "points_to_next_tier": 9000
+  }
+}
+```
+
+**Tiers:**
+- **Bronze**: 0+ points, 1.0x multiplier
+- **Silver**: 1,000+ points, 1.2x multiplier
+- **Gold**: 5,000+ points, 1.5x multiplier
+- **Platinum**: 15,000+ points, 2.0x multiplier
+
+### Get Loyalty Transactions
+```http
+GET /loyalty/transactions?type=earn&per_page=20
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `type` (optional): `earn`, `redeem`, `expire`, `bonus`, `adjustment`
+- `per_page` (optional): Number per page (default: 20)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "type": "earn",
+        "points": 150,
+        "balance_after": 1500,
+        "source_type": "Order",
+        "source_id": 456,
+        "description": "Order #456 - 100 TND",
+        "created_at": "2024-11-15T10:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### Get Tiers Information
+```http
+GET /loyalty/tiers
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "tiers": [
+      {
+        "name": "bronze",
+        "threshold": 0,
+        "multiplier": 1.0,
+        "benefits": ["Points de base"]
+      },
+      {
+        "name": "silver",
+        "threshold": 1000,
+        "multiplier": 1.2,
+        "benefits": ["+20% de points", "Livraison prioritaire"]
+      }
+    ],
+    "current_tier": "gold",
+    "lifetime_points": 6000
+  }
+}
+```
+
+### Get Available Rewards
+```http
+GET /loyalty/rewards?type=discount
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `type` (optional): `discount`, `product`, `cashback`, `free_delivery`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "rewards": [
+      {
+        "id": 1,
+        "name": "10 TND Discount",
+        "description": "Get 10 TND off your next order",
+        "type": "discount",
+        "points_cost": 500,
+        "config": {"amount": 10},
+        "quantity_available": 100,
+        "is_active": true,
+        "can_afford": true,
+        "points_needed": 0
+      }
+    ],
+    "user_points": 1500
+  }
+}
+```
+
+### Get Single Reward
+```http
+GET /loyalty/rewards/{id}
+Authorization: Bearer {token}
+```
+
+### Redeem Reward
+```http
+POST /loyalty/rewards/{id}/redeem
+Authorization: Bearer {token}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Récompense échangée avec succès!",
+  "data": {
+    "redemption": {
+      "id": 1,
+      "user_id": 10,
+      "reward_id": 5,
+      "points_spent": 500,
+      "status": "approved",
+      "redemption_code": "ABC123XYZ789",
+      "expires_at": "2024-12-15T00:00:00Z"
+    },
+    "remaining_points": 1000
+  }
+}
+```
+
+### Get User Redemptions
+```http
+GET /loyalty/redemptions?status=approved
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `status` (optional): `pending`, `approved`, `used`, `expired`, `cancelled`
+- `per_page` (optional): Number per page (default: 20)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "reward_id": 5,
+        "points_spent": 500,
+        "status": "approved",
+        "redemption_code": "ABC123XYZ789",
+        "expires_at": "2024-12-15T00:00:00Z",
+        "used_at": null,
+        "reward": {...}
+      }
+    ]
+  }
+}
+```
+
+### Get Single Redemption
+```http
+GET /loyalty/redemptions/{id}
+Authorization: Bearer {token}
+```
+
+### Use Redemption Code
+```http
+POST /loyalty/redemptions/{id}/use
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Code utilisé avec succès",
+  "data": {
+    "id": 1,
+    "status": "used",
+    "used_at": "2024-11-15T10:30:00Z"
+  }
+}
+```
+
+### Cancel Redemption
+```http
+POST /loyalty/redemptions/{id}/cancel
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Échange annulé et points remboursés",
+  "data": {...}
+}
+```
+
+---
+
 ## ⚠️ Error Responses
 
 ### Validation Error (422)
@@ -838,6 +1258,16 @@ https://api.ichri.tn/postman-collection.json
 
 ---
 
-**Version**: 2.0.0
+**Version**: 2.1.0 (Phase 2.5)
 **Last Updated**: November 2024
 **Contact**: support@ichri.tn
+
+---
+
+## 🆕 Phase 2 Features (v2.1.0)
+
+**New in this version:**
+- 👥 **Team Management**: Multi-user accounts with role-based permissions
+- 🎭 **Masquerade**: Sales rep ordering and customer support
+- 🎁 **Loyalty Program**: Advanced tier-based points and rewards system
+- 📱 **WhatsApp Integration**: Foundation ready (full implementation coming in Phase 2.5+)

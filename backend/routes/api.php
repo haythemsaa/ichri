@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\KarnyController;
 use App\Http\Controllers\Api\DigitalServiceController;
 use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Api\MasqueradeController;
+use App\Http\Controllers\Api\LoyaltyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +112,40 @@ Route::prefix('v1')->group(function () {
             Route::post('/process', [DigitalServiceController::class, 'process']);
             Route::get('/history', [DigitalServiceController::class, 'history']);
             Route::get('/statistics', [DigitalServiceController::class, 'statistics']);
+        });
+
+        // Team Management - Multi-User Accounts
+        Route::prefix('team')->group(function () {
+            Route::get('/members', [TeamController::class, 'members']);
+            Route::post('/invite', [TeamController::class, 'invite']);
+            Route::put('/members/{id}', [TeamController::class, 'update']);
+            Route::delete('/members/{id}', [TeamController::class, 'remove']);
+        });
+
+        // Masquerade - Sales Rep Ordering
+        Route::prefix('masquerade')->group(function () {
+            Route::post('/start', [MasqueradeController::class, 'start']);
+            Route::post('/end', [MasqueradeController::class, 'end']);
+            Route::get('/history', [MasqueradeController::class, 'history']);
+        });
+
+        // Loyalty Program
+        Route::prefix('loyalty')->group(function () {
+            // Points
+            Route::get('/points', [LoyaltyController::class, 'getPoints']);
+            Route::get('/transactions', [LoyaltyController::class, 'getTransactions']);
+            Route::get('/tiers', [LoyaltyController::class, 'getTiers']);
+
+            // Rewards
+            Route::get('/rewards', [LoyaltyController::class, 'getRewards']);
+            Route::get('/rewards/{id}', [LoyaltyController::class, 'getReward']);
+            Route::post('/rewards/{id}/redeem', [LoyaltyController::class, 'redeemReward']);
+
+            // Redemptions
+            Route::get('/redemptions', [LoyaltyController::class, 'getRedemptions']);
+            Route::get('/redemptions/{id}', [LoyaltyController::class, 'getRedemption']);
+            Route::post('/redemptions/{id}/use', [LoyaltyController::class, 'useRedemption']);
+            Route::post('/redemptions/{id}/cancel', [LoyaltyController::class, 'cancelRedemption']);
         });
     });
 
