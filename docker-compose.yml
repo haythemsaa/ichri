@@ -1,0 +1,187 @@
+version: '3.8'
+
+services:
+  # API Laravel
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ichri_backend
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+      - ./backend/storage:/var/www/storage
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=ichri.tn
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=ichri
+      - DB_USERNAME=ichri_user
+      - DB_PASSWORD=ichri_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+    depends_on:
+      - mysql
+      - redis
+      - elasticsearch
+    networks:
+      - ichri_network
+
+  # Base de données MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: ichri_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ichri
+      MYSQL_USER: ichri_user
+      MYSQL_PASSWORD: ichri_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ichri_network
+
+  # Redis (Cache & Queue)
+  redis:
+    image: redis:7-alpine
+    container_name: ichri_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ichri_network
+
+  # ElasticSearch (Search Engine)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: ichri_elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - ichri_network
+
+  # PostgreSQL (Analytics)
+  postgres:
+    image: postgres:15-alpine
+    container_name: ichri_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ichri_analytics
+      POSTGRES_USER: ichri_user
+      POSTGRES_PASSWORD: ichri_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ichri_network
+
+  # Application Web Next.js
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: ichri_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      - backend
+    networks:
+      - ichri_network
+
+  # Nginx (Reverse Proxy)
+  nginx:
+    image: nginx:alpine
+    container_name: ichri_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d
+      - ./backend/public:/var/www/public
+    depends_on:
+      - backend
+      - web
+    networks:
+      - ichri_network
+
+  # Queue Worker
+  queue-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ichri_queue_worker
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --sleep=3 --tries=3
+    volumes:
+      - ./backend:/var/www
+    environment:
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    depends_on:
+      - backend
+      - redis
+      - mysql
+    networks:
+      - ichri_network
+
+  # Scheduler
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ichri_scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
+    volumes:
+      - ./backend:/var/www
+    environment:
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    depends_on:
+      - backend
+      - mysql
+    networks:
+      - ichri_network
+
+networks:
+  ichri_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  postgres_data:
+    driver: local
