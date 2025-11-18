@@ -160,6 +160,59 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(DigitalServiceTransaction::class);
     }
 
+    // Phase 2 Relationships
+
+    public function loyaltyPoints()
+    {
+        return $this->hasOne(LoyaltyPoint::class);
+    }
+
+    public function loyaltyTransactions()
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
+    }
+
+    public function loyaltyRedemptions()
+    {
+        return $this->hasMany(LoyaltyRedemption::class);
+    }
+
+    public function teamMembers()
+    {
+        return $this->hasMany(TeamMember::class, 'account_id');
+    }
+
+    public function teamMemberships()
+    {
+        return $this->hasMany(TeamMember::class, 'user_id');
+    }
+
+    public function sentTeamInvitations()
+    {
+        return $this->hasMany(TeamInvitation::class, 'invited_by');
+    }
+
+    public function receivedTeamInvitations()
+    {
+        return $this->hasMany(TeamInvitation::class, 'email', 'email')
+            ->orWhere('phone', $this->phone);
+    }
+
+    public function masqueradeSessions()
+    {
+        return $this->hasMany(MasqueradeSession::class, 'admin_user_id');
+    }
+
+    public function masqueradeTargetSessions()
+    {
+        return $this->hasMany(MasqueradeSession::class, 'target_user_id');
+    }
+
+    public function whatsappConversations()
+    {
+        return $this->hasMany(WhatsAppConversation::class);
+    }
+
     /**
      * Scopes
      */

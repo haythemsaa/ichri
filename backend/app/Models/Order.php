@@ -295,6 +295,11 @@ class Order extends Model
         // Trigger events
         event(new \App\Events\OrderStatusChanged($this, $oldStatus, $status));
 
+        // Award loyalty points when order is delivered
+        if ($status === self::STATUS_DELIVERED) {
+            event(new \App\Events\OrderCompleted($this));
+        }
+
         return $this;
     }
 

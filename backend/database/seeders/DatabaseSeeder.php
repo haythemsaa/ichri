@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             PromotionSeeder::class,
             KarnySeeder::class,
             DigitalServiceCommissionSeeder::class,
+            LoyaltyRewardSeeder::class, // Phase 2.5
         ]);
 
         $this->command->newLine();

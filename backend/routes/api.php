@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\MasqueradeController;
 use App\Http\Controllers\Api\LoyaltyController;
+use App\Http\Controllers\Api\Admin\LoyaltyAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -155,5 +156,30 @@ Route::prefix('v1')->group(function () {
         Route::get('/featured', [PromotionController::class, 'featured']);
         Route::post('/validate', [PromotionController::class, 'validateCode'])->middleware('auth:api');
         Route::post('/apply', [PromotionController::class, 'apply'])->middleware('auth:api');
+    });
+
+    // Admin routes (require auth + admin role)
+    Route::prefix('admin')->middleware('auth:api')->group(function () {
+
+        // Loyalty Administration
+        Route::prefix('loyalty')->group(function () {
+            // Rewards management
+            Route::get('/rewards', [LoyaltyAdminController::class, 'getRewards']);
+            Route::post('/rewards', [LoyaltyAdminController::class, 'createReward']);
+            Route::put('/rewards/{id}', [LoyaltyAdminController::class, 'updateReward']);
+            Route::delete('/rewards/{id}', [LoyaltyAdminController::class, 'deleteReward']);
+
+            // Redemptions management
+            Route::get('/redemptions', [LoyaltyAdminController::class, 'getRedemptions']);
+            Route::post('/redemptions/{id}/approve', [LoyaltyAdminController::class, 'approveRedemption']);
+
+            // Analytics & Statistics
+            Route::get('/statistics', [LoyaltyAdminController::class, 'getStatistics']);
+            Route::get('/top-users', [LoyaltyAdminController::class, 'getTopUsers']);
+            Route::get('/analytics', [LoyaltyAdminController::class, 'getRewardAnalytics']);
+
+            // Manual point adjustment
+            Route::post('/adjust-points', [LoyaltyAdminController::class, 'adjustPoints']);
+        });
     });
 });
