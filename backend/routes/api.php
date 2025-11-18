@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\MasqueradeController;
 use App\Http\Controllers\Api\LoyaltyController;
 use App\Http\Controllers\Api\Admin\LoyaltyAdminController;
+use App\Http\Controllers\Api\WhatsAppWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -181,5 +182,11 @@ Route::prefix('v1')->group(function () {
             // Manual point adjustment
             Route::post('/adjust-points', [LoyaltyAdminController::class, 'adjustPoints']);
         });
+    });
+
+    // WhatsApp Webhook (public - verified by WhatsApp)
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('/webhook', [WhatsAppWebhookController::class, 'verify']);
+        Route::post('/webhook', [WhatsAppWebhookController::class, 'webhook']);
     });
 });
