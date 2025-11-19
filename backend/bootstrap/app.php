@@ -12,13 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Global API middleware stack
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\LogApiRequests::class,
         ]);
 
+        // Middleware aliases for route-specific use
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'team.permission' => \App\Http\Middleware\CheckTeamPermission::class,
+            'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            'throttle.redis' => \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
         ]);
 
         $middleware->priority([

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\MasqueradeController;
 use App\Http\Controllers\Api\LoyaltyController;
 use App\Http\Controllers\Api\Admin\LoyaltyAdminController;
 use App\Http\Controllers\Api\WhatsAppWebhookController;
+use App\Http\Controllers\Api\HealthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,14 +25,10 @@ use App\Http\Controllers\Api\WhatsAppWebhookController;
 
 Route::prefix('v1')->group(function () {
 
-    // Health check
-    Route::get('/health', function () {
-        return response()->json([
-            'status' => 'ok',
-            'timestamp' => now()->toIso8601String(),
-            'version' => config('app.version', '1.0.0'),
-        ]);
-    });
+    // Health check endpoints
+    Route::get('/health', [HealthController::class, 'index']);
+    Route::get('/health/detailed', [HealthController::class, 'detailed']);
+    Route::get('/health/metrics', [HealthController::class, 'metrics']);
 
     // Authentication routes
     Route::prefix('auth')->group(function () {
